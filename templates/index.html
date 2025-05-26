@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <title>Binance MA Crossover Scanner</title>
+  <script>
+    setTimeout(() => location.reload(), 15 * 60 * 1000); // Refresh every 15 min
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+  <div class="container mx-auto px-4 py-8 flex-grow">
+    <h1 class="text-4xl font-bold mb-8 text-center">📈 Binance MA Crossover Scanner</h1>
+
+    <div class="mb-6 flex justify-center space-x-4">
+      <a href="/" class="px-4 py-2 rounded-md {{ 'bg-blue-600' if not filter_buy else 'bg-gray-700 hover:bg-gray-600' }}">All Signals</a>
+      <a href="/?filter=buy" class="px-4 py-2 rounded-md {{ 'bg-blue-600' if filter_buy else 'bg-gray-700 hover:bg-gray-600' }}">Only BUY Signals</a>
+      <a href="#history" class="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600">Signal History</a>
+    </div>
+
+    <div id="signals" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {% for item in results %}
+      <div class="bg-gray-800 rounded-xl p-4 shadow-lg">
+        <h2 class="text-2xl font-bold mb-2">{{ item.symbol }} - <span class="text-green-400">{{ item.signal }}</span></h2>
+        <div class="overflow-x-auto">
+          {{ item.chart|safe }}
+        </div>
+      </div>
+      {% else %}
+      <p>No signals found.</p>
+      {% endfor %}
+    </div>
+
+    <hr class="my-12 border-gray-700">
+
+    <h2 id="history" class="text-3xl font-bold mb-6 text-center">🕘 Signal History (Last 100)</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full table-auto border-collapse border border-gray-700">
+        <thead>
+          <tr class="bg-gray-700">
+            <th class="border border-gray-600 px-4 py-2">Time (UTC)</th>
+            <th class="border border-gray-600 px-4 py-2">Symbol</th>
+            <th class="border border-gray-600 px-4 py-2">Signal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in history|reverse %}
+          <tr class="hover:bg-gray-600">
+            <td class="border border-gray-600 px-4 py-1">{{ h.time.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+            <td class="border border-gray-600 px-4 py-1">{{ h.symbol }}</td>
+            <td class="border border-gray-600 px-4 py-1">{{ h.signal }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer class="text-center py-4 text-gray-400">
+    Made with ❤️ by ChatGPT
+  </footer>
+
+</body>
+</html>
