@@ -65,16 +65,34 @@ def detect_buy_signal(df):
 
     # Conditions
     cond1 = prev['MA7'] < prev['MA25'] and latest['MA7'] > latest['MA25']  # MA7 cross MA25
-    cond2 = latest['MA25'] > latest['MA99'] and latest['MA25'] > prev['MA25']  # MA25 rising above MA99
+    cond2 = latest['MA25'] > prev['MA25']  # MA25 rising
     cond3 = latest['RSI'] > 50 or (prev['MACD'] < prev['MACD_signal'] and latest['MACD'] > latest['MACD_signal'])  # RSI or MACD
     cond4 = latest['vol_change'] > 0  # Volume rising
 
     return all([cond1, cond2, cond3, cond4])
 
-def send_telegram_alert(message):
+def send_telegram_alert(symbol, price):
     try:
+        target1 = round(price * 1.025, 6)
+        target2 = round(price * 1.05, 6)
+        target3 = round(price * 1.075, 6)
+        stop_loss = round(price * 0.95, 6)
+
+        message = (
+            f"🔥Binance MA Scanner BUY signal on *{symbol}*\n\n"
+            f"Entry Price: {price}\n\n"
+            f"🌟 Target 1: {target1} (+2.5%)\n"
+            f"🌟 Target 2: {target2} (+5%)\n"
+            f"🌟 Target 3: {target3} (+7.5%)\n\n"
+            f"🔚 Stop Loss: {stop_loss} (−5%)"
+        )
+
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        data = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
+        data = {
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": message,
+            "parse_mode": "Markdown"
+        }
         requests.post(url, data=data)
     except Exception as e:
         print("Telegram error:", e)
@@ -116,8 +134,8 @@ def run_scanner():
         signal = "HOLD"
         if detect_buy_signal(df):
             signal = "BUY"
-            message = f"🔥 Binance MA Scanner BUY signal on <b>{symbol}</b>"
-            send_telegram_alert(message)
+            price = df.iloc[-1]['close']
+            send_telegram_alert(symbol, price)
 
         results.append({
             'symbol': symbol,
@@ -131,16 +149,3 @@ def run_scanner():
 
 def get_signal_history(limit=100):
     return signal_history[-limit:]
-
-        
-
-
-
-
-
-
-
-
-
-
-
